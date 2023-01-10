@@ -18,7 +18,9 @@ void Listener::changeLib(bool newValue) {
 	selectedLib = newValue;
 }
 
-
+void Listener::save(QString path) {
+	img.saveImage(path.toStdString());
+}
 
 void Listener::runModification() {
 	QString temp = "C:\\Users\\Mikolaj\\Pictures\\football.png";
@@ -28,9 +30,9 @@ void Listener::runModification() {
 		img.setPath(sourceFilePath.toStdString());
 
 		img.loadImage();
-		img.saveImage();
+		img.saveImage("temp.bmp");
 	}
 
 
-	emit photoModified(temp);
+	emit photoModified("temp.bmp");
 }

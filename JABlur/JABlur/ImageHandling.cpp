@@ -73,8 +73,10 @@ void ImageHandling::loadImage() {
 
 
 
-void ImageHandling::saveImage() {
+void ImageHandling::saveImage(std::string path = "out.bmp") {
 
+	if (outputArray == nullptr)
+		return;
 	int padding = 4- ((width * sizeof(std::byte) * 3) % 4);
 	if (padding == 4)
 		padding = 0;
@@ -104,7 +106,7 @@ void ImageHandling::saveImage() {
 	infoHeader.importantColor = 0;
 	//x.close();
 
-	x.open("random.bmp", std::ios::out | std::ios::binary);
+	x.open(path, std::ios::out | std::ios::binary);
 	x.write((char*)&newFileHeader, sizeof(bmpFileHeader));
 	x.write((char*)&infoHeader, sizeof(bmpInfoHeader));
 	//x.write((char*)pixelArray, imgSize);

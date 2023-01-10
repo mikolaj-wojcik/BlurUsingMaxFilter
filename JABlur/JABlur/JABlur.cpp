@@ -6,6 +6,7 @@ JABlur::JABlur(QWidget *parent)
     ui.setupUi(this);
     
     QObject::connect(ui.pushButton, SIGNAL(clicked()), this, SLOT(loadButtonPressed()));
+    QObject::connect(ui.pushButton_2, SIGNAL(clicked()), this, SLOT(saveButtonPressed()));
     QObject::connect(ui.pushButton_3, SIGNAL(clicked()), this, SLOT(runProgram()));
     QObject::connect(ui.comboBox, SIGNAL(currentTextChanged(QString)), this, SLOT(changeNumberOfThreads()));
     QObject::connect(ui.cppRadio, SIGNAL(clicked()), this, SLOT(changeLibraryCpp));
@@ -34,6 +35,15 @@ void JABlur::loadButtonClicked() {
     int i = 0;
 }
 
+void JABlur::saveButtonPressed() {
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"),
+        "",
+        tr("Images (*.bmp)"));
+    if (fileName != "") {
+        listen.save(fileName);
+    }
+}
+
 void JABlur::loadImage(QString src, QLabel* target) {
     QPixmap originalfile;
     if (!originalfile.load(src)) {
@@ -41,6 +51,7 @@ void JABlur::loadImage(QString src, QLabel* target) {
     }
     target->setPixmap(originalfile.scaled(target->width(), target->height(), Qt::KeepAspectRatio));
 }
+
 
 void JABlur::changeNumberOfThreads() {
     

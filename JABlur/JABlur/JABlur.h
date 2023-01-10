@@ -19,6 +19,7 @@ public:
     void loadButtonClicked();
 public slots:
     void loadButtonPressed();
+    void saveButtonPressed();
     void changeNumberOfThreads();
     void changeLibraryAsm() { listen.changeLib(false); }
     void changeLibraryCpp() { listen.changeLib(true); }

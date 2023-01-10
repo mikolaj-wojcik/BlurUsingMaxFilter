@@ -54,10 +54,10 @@ public:
 	}
 
 	
-	void callLibFunction();
+	//void callLibFunction();
 	void setPath(std::string);
 	void loadImage();
-	void saveImage();
+	void saveImage(std::string);
 	void setNumberOfThreads(int num);
 };
 

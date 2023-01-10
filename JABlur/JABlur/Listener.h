@@ -22,6 +22,7 @@ public:
 	void setSourcePath(QString src);
 	void changeLib(bool newValue);
 	void runModification();
+	void save(QString path);
 	//std::array
 public slots:
 	void loadButtonPressed();
