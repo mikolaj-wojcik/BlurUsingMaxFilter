@@ -8,6 +8,7 @@
 #include <thread>
 #include <vector>
 #include <math.h>
+#include <windows.h>
 #include "bmpStruct.h"
 
 
@@ -54,7 +55,7 @@ public:
 	}
 
 	
-	//void callLibFunction();
+	void callCppLibFunction();
 	void setPath(std::string);
 	void loadImage();
 	void saveImage(std::string);

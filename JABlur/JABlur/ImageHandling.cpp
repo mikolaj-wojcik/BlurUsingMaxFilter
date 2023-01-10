@@ -63,7 +63,8 @@ void ImageHandling::loadImage() {
 	brightnessArray = calculateBrightness();
 	outputArray = new std::byte[height * width * 3];
 
-	libFunction(pixelArray, outputArray, brightnessArray, width, height, height, 0, 10);
+	//libFunction(pixelArray, outputArray, brightnessArray, width, height, height, 0, 10);
+	callCppLibFunction();
 
 
 	
@@ -219,7 +220,14 @@ void ImageHandling::setNumberOfThreads(int num) {
 }
 
 
+void ImageHandling::callCppLibFunction() {
+	typedef int(_stdcall* maxFilter)(std::byte*, std::byte*, int32_t*, int32_t, int32_t, int32_t, int32_t, int32_t);
+	HINSTANCE dllHandler = NULL;
+	dllHandler = LoadLibrary(L"BlurringLib.dll");
+	maxFilter filter = (maxFilter)GetProcAddress(dllHandler, "maxFilterCpp");
+	filter(pixelArray, outputArray, brightnessArray, width, height, height, 0, 10);
 
+}
 
 
 
