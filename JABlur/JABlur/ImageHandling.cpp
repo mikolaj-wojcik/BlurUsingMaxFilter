@@ -1,15 +1,40 @@
 #include "ImageHandling.h"
 
 
-void ImageHandling::loadImage() {
+double ImageHandling::run() {
+	if (!loadImage()) {
+		return 0.0;
+	}
+
+	clearBrightArray();
+	clearOutputArray();
+	brightnessArray = calculateBrightness();
+	outputArray = new std::byte[height * width * 3];
+
+	//libFunction(pixelArray, outputArray, brightnessArray, width, height, height, 0, 10);
+	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
+	start = std::chrono::high_resolution_clock::now();
+	if(true)
+		callCppLibFunction();
+	else{}
+
+	end = std::chrono::high_resolution_clock::now();
+
+	saveImage("temp.bmp");
+
+	std::chrono::duration<double> timeElapsed = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
+	return timeElapsed.count();
+}
+
+bool ImageHandling::loadImage() {
 	if (inputPath.empty())
-		return;
+		return false;
 	std::ifstream f;
 	std::ofstream o;
 	f.open(inputPath, std::ios::in | std::ios::binary);
 
 	if (!f.is_open()) {
-		//return;
+		return false;
 	}
 
 	bmpFileHeader fileHead;
@@ -56,19 +81,9 @@ void ImageHandling::loadImage() {
 
 	f.close();
 
-	delete arrForPadding;
+	delete[] arrForPadding;
 
-	clearBrightArray();
-	clearOutputArray();
-	brightnessArray = calculateBrightness();
-	outputArray = new std::byte[height * width * 3];
-
-	//libFunction(pixelArray, outputArray, brightnessArray, width, height, height, 0, 10);
-	callCppLibFunction();
-
-
-	
-
+	return true;
 
 }
 
@@ -225,6 +240,30 @@ void ImageHandling::callCppLibFunction() {
 	HINSTANCE dllHandler = NULL;
 	dllHandler = LoadLibrary(L"BlurringLib.dll");
 	maxFilter filter = (maxFilter)GetProcAddress(dllHandler, "maxFilterCpp");
+
+
+	int extraRowsForLastThread = 0;
+	int rowsPerThread = 0;
+	int rowsForLastThread = 0;
+	if (numberOfThreads > 1) {
+		extraRowsForLastThread = height % numberOfThreads;
+		rowsPerThread = (height - extraRowsForLastThread) / (numberOfThreads);
+		rowsForLastThread = rowsPerThread + extraRowsForLastThread;
+	}
+	else
+		rowsForLastThread = height - 1;
+
+	std::vector<std::thread> threads;
+	for (int i = 0; i < numberOfThreads - 1; i++) {
+
+		threads.push_back(std::thread(filter, pixelArray ,outputArray , brightnessArray, width, height, rowsPerThread ,i*rowsPerThread, ray));
+	}
+	threads.push_back(std::thread(filter,pixelArray,outputArray, brightnessArray, width, height, rowsForLastThread,(numberOfThreads -1) * rowsPerThread, ray));
+
+	for (auto& trd : threads) {
+		if (trd.joinable())
+			trd.join();
+	}
 	filter(pixelArray, outputArray, brightnessArray, width, height, height, 0, 10);
 
 }

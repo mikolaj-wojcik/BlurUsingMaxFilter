@@ -25,6 +25,7 @@ public slots:
     void changeLibraryCpp() { listen.changeLib(true); }
     void runProgram();
     void changeModifiedPicture(QString path);
+    void insertNewTime(QString data);
 private:
     Ui::JABlurClass ui;
     Listener listen;

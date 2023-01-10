@@ -9,6 +9,7 @@
 #include <vector>
 #include <math.h>
 #include <windows.h>
+#include <chrono>
 #include "bmpStruct.h"
 
 
@@ -23,7 +24,7 @@ class ImageHandling
 	//Can hold values between 0(darkest) - 1000(brighest)
 	int32_t* brightnessArray = nullptr;
 	int numberOfThreads =1;
-	int ray;
+	int ray =12;
 
 	bmpFileHeader tempHead;
 	bmpInfoHeader tempInfo;
@@ -45,6 +46,7 @@ class ImageHandling
 
 	void libFunction(std::byte* inputArr, std::byte* outputArr, int32_t* brightArr, int32_t fWitdh, int32_t fHeight, int32_t fNumOfRowsToToDo, int32_t startRow, int32_t fRay);
 
+	void callCppLibFunction();
 public:
 
 	ImageHandling(){}
@@ -54,10 +56,9 @@ public:
 		clearBrightArray();
 	}
 
-	
-	void callCppLibFunction();
+	double run();
 	void setPath(std::string);
-	void loadImage();
+	bool loadImage();
 	void saveImage(std::string);
 	void setNumberOfThreads(int num);
 };

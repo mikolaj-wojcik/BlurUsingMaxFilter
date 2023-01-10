@@ -2,6 +2,7 @@
 #include <QObject>
 #include <QDebug>
 #include <array>
+#include <string>
 #include "ImageHandling.h"
 
 class Listener : public QObject{
@@ -29,5 +30,6 @@ public slots:
 	void changeThreads(QString newNumber);
 signals:
 	void photoModified(QString tempPath);
+	void newTime(QString time);
 };
 

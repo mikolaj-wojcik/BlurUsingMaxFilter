@@ -12,6 +12,7 @@ JABlur::JABlur(QWidget *parent)
     QObject::connect(ui.cppRadio, SIGNAL(clicked()), this, SLOT(changeLibraryCpp));
     QObject::connect(ui.asmRadio, SIGNAL(clicked()), this, SLOT(changeLibraryAsm));
     QObject::connect(&listen, SIGNAL(photoModified(QString)), this, SLOT(changeModifiedPicture(QString)));
+    QObject::connect(&listen, SIGNAL(newTime(QString)), this, SLOT(insertNewTime(QString)));
     
 }
 
@@ -21,7 +22,7 @@ JABlur::~JABlur()
 
 void JABlur::loadButtonPressed() {
     std::cout << "Elo!\n";
-    //ui.listWidget->addItem("PezetPablo");
+
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
         "",
         tr("Images (*.bmp)"));
@@ -61,6 +62,10 @@ void JABlur::changeNumberOfThreads() {
 void JABlur::changeModifiedPicture(QString temp) {
     loadImage(temp, ui.label_2);
     tempFilePath = temp;
+}
+
+void JABlur::insertNewTime(QString data) {
+    ui.listWidget->addItem(data);
 }
 
 void JABlur::runProgram() {

@@ -29,10 +29,19 @@ void Listener::runModification() {
 
 		img.setPath(sourceFilePath.toStdString());
 
-		img.loadImage();
-		img.saveImage("temp.bmp");
+		double timeElapsed = img.run();
+		std::string timeString = std::to_string(timeElapsed);
+		
+		if (selectedLib) {
+			timeString = "C++    " + std::to_string(numberOfThreads) + "      " + timeString;
+		}
+		else {
+			timeString = "Asm    " + std::to_string(numberOfThreads) + "      " + timeString;
+		}
+		emit photoModified("temp.bmp");
+		emit newTime(QString::fromStdString(timeString));
+
 	}
 
 
-	emit photoModified("temp.bmp");
 }
