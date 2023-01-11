@@ -239,7 +239,7 @@ void ImageHandling::callCppLibFunction() {
 	typedef int(_stdcall* maxFilter)(std::byte*, std::byte*, int32_t*, int32_t, int32_t, int32_t, int32_t, int32_t);
 	HINSTANCE dllHandler = NULL;
 	dllHandler = LoadLibrary(L"BlurringLib.dll");
-	maxFilter filter = (maxFilter)GetProcAddress(dllHandler, "maxFilterCpp");
+	maxFilter filter = (maxFilter)GetProcAddress(dllHandler, "maxFilter");
 
 
 	int extraRowsForLastThread = 0;

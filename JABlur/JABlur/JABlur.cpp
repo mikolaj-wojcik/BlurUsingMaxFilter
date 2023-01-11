@@ -57,6 +57,15 @@ void JABlur::loadImage(QString src, QLabel* target) {
 void JABlur::changeNumberOfThreads() {
     
     listen.changeThreads(ui.comboBox->currentText());
+    
+    typedef int(_stdcall* maxFilter)(int, int);
+    
+    HINSTANCE dllHandler = NULL;
+    dllHandler = LoadLibrary(L"AsmBlur.dll");
+    maxFilter filter = (maxFilter)GetProcAddress(dllHandler, "MyProc1");
+
+    ui.listWidget->addItem(QString::number(filter(21, 23)));
+    
 }
 
 void JABlur::changeModifiedPicture(QString temp) {

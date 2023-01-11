@@ -4,7 +4,7 @@
 
 
 
-void maxFilterCpp(
+void maxFilter(
     std::byte* inputArr, std::byte* outputArr, int32_t* brightArr,
     int32_t fWitdh, int32_t fHeight, int32_t fNumOfRowsToToDo,
     int32_t startRow, int32_t fRay) {

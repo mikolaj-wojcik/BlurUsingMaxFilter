@@ -1,0 +1,2 @@
+LIBRARY BlurFilter
+EXPORTS maxFilter
