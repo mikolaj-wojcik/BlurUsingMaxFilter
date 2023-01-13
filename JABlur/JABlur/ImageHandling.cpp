@@ -236,9 +236,10 @@ void ImageHandling::setNumberOfThreads(int num) {
 
 
 void ImageHandling::callCppLibFunction() {
-	typedef int(_stdcall* maxFilter)(std::byte*, std::byte*, int32_t*, int32_t, int32_t, int32_t, int32_t, int32_t);
+	typedef int(_stdcall* maxFilter)(parametersStruct, std::byte*, std::byte*, int32_t*);
 	HINSTANCE dllHandler = NULL;
-	dllHandler = LoadLibrary(L"BlurringLib.dll");
+	dllHandler = LoadLibrary(L"AsmBlur.dll");
+	//dllHandler = LoadLibrary(L"BlurringLib.dll");
 	maxFilter filter = (maxFilter)GetProcAddress(dllHandler, "maxFilter");
 
 
@@ -255,19 +256,35 @@ void ImageHandling::callCppLibFunction() {
 
 	std::vector<std::thread> threads;
 	for (int i = 0; i < numberOfThreads - 1; i++) {
-
-		threads.push_back(std::thread(filter, pixelArray ,outputArray , brightnessArray, width, height, rowsPerThread ,i*rowsPerThread, ray));
+		parametersStruct* p = new parametersStruct(packToStruct(pixelArray, outputArray, brightnessArray, width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray));
+		//threads.push_back(std::thread(filter, p));
+		delete p;
 	}
-	threads.push_back(std::thread(filter,pixelArray,outputArray, brightnessArray, width, height, rowsForLastThread,(numberOfThreads -1) * rowsPerThread, ray));
+	//parametersStruct* p = new parametersStruct(packToStruct(pixelArray, outputArray, brightnessArray, width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray));
+	parametersStruct p = packToStruct(pixelArray, outputArray, brightnessArray, width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray);
+	threads.push_back(std::thread(filter,p, pixelArray, outputArray, brightnessArray));
+	//delete p;
 
 	for (auto& trd : threads) {
 		if (trd.joinable())
 			trd.join();
 	}
-	filter(pixelArray, outputArray, brightnessArray, width, height, height, 0, 10);
+	//filter(pixelArray, outputArray, brightnessArray, width, height, height, 0, 10);
 
 }
 
+
+parametersStruct ImageHandling::packToStruct(std::byte* inputArr, std::byte* outputArr, int32_t* brightArr, 
+	int32_t fWitdh, int32_t fHeight, int32_t fNumOfRowsToToDo, int32_t startRow, int32_t fRay) {
+	parametersStruct p;
+	p.height = (uint32_t)fHeight;
+	
+	p.ray = (uint32_t)fRay;
+	p.rowsToDo = (uint32_t)fNumOfRowsToToDo;
+	p.width = (uint32_t)fWitdh;
+
+	return p;
+}
 
 
 

@@ -11,6 +11,7 @@
 #include <windows.h>
 #include <chrono>
 #include "bmpStruct.h"
+#include "parametersToAssembly.h"
 
 
 class ImageHandling
@@ -47,6 +48,7 @@ class ImageHandling
 	void libFunction(std::byte* inputArr, std::byte* outputArr, int32_t* brightArr, int32_t fWitdh, int32_t fHeight, int32_t fNumOfRowsToToDo, int32_t startRow, int32_t fRay);
 
 	void callCppLibFunction();
+	parametersStruct packToStruct(std::byte* inputArr, std::byte* outputArr, int32_t* brightArr, int32_t fWitdh, int32_t fHeight, int32_t fNumOfRowsToToDo, int32_t startRow, int32_t fRay);
 public:
 
 	ImageHandling(){}

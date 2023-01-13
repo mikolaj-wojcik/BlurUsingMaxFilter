@@ -85,6 +85,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="parametersToAssembly.h" />
     <QtRcc Include="JABlur.qrc" />
     <QtUic Include="JABlur.ui" />
     <QtMoc Include="JABlur.h" />

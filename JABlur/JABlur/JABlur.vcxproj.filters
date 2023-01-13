@@ -46,6 +46,9 @@
     <ClCompile Include="ImageHandling.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="parametersToAssembly.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="Listener.h">
