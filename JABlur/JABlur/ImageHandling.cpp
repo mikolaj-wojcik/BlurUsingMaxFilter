@@ -282,6 +282,7 @@ parametersStruct ImageHandling::packToStruct(std::byte* inputArr, std::byte* out
 	p.ray = (uint32_t)fRay;
 	p.rowsToDo = (uint32_t)fNumOfRowsToToDo;
 	p.width = (uint32_t)fWitdh;
+	p.startRow = (uint32_t)startRow;
 
 	return p;
 }

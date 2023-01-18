@@ -11,4 +11,5 @@ struct parametersStruct {
 	uint32_t height;
 	uint32_t rowsToDo;
 	uint32_t ray;
+	uint32_t startRow;
 };
