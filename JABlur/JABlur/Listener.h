@@ -10,7 +10,7 @@ class Listener : public QObject{
 private:
 	QString sourceFilePath = "";
 	int numberOfThreads = 1;
-	bool selectedLib; //true cpp, false asm
+	bool selectedLib =true; //true cpp, false asm
 	std::array<int, 3> loadedHistogram;
 	std::array<int, 3> modifiedHistogram;
 	ImageHandling img;

@@ -67,8 +67,6 @@ mov brightArr, r9
 xor rax, rax
 
 
-Kreuz:
-
 ;mov r1, fWidth
 ;mov r2, fHeight
 
@@ -123,6 +121,15 @@ add r10, rbx
 mov r11, rdx
 add r11, rbx
 
+xor rax, rax
+mov eax, fWidth; load width offset to calculate index
+imul rax, rcx; multply by already processed rows of picture
+add rax, rdx; add number of columns already processed
+mov r12, rax; save index of current modyfing index to regiuter
+imul rax,2
+add rax, brightArr
+mov bx, word ptr[rax];load bright value of current modified pixel to register
+mov r13, rbx;
 
 
 
@@ -133,13 +140,13 @@ mov eax, fHeight
 
 
 
+;if statement to check if selected index is in array range
+cmp r8, 0; check if current ray iterator is in pixelArray range
+JL RayHeightLessThanZero ;if iterarto is lesst than zero load zero to start iterating
 ;;;;;Start of rays  outer loop
 RAYHEIGHT: ;Loop to to find max brghness element in slected pixel neighbour
 
 
-;if statement to check if selected index is in array range
-cmp r8, 0; check if current ray iterator is in pixelArray range
-JL RayHeightLessThanZero ;if iterarto is lesst than zero load zero to start iterating
 xor rax, rax
 mov eax, fHeight	;load number of picture rows
 cmp r8, rax; check if ray iterator is still in pixelArray range
@@ -154,25 +161,16 @@ mov ebx , fRay
 mov r9, rdx
 sub r9, rbx
 
-xor rax, rax
-mov eax, fWidth; load width offset to calculate index
-imul rax, rcx; multply by already processed rows of picture
-add rax, rdx; add number of columns already processed
-mov r12, rax; save index of current modyfing index to regiuter
-imul rax,2
-add rax, brightArr
-mov bx, word ptr[rax];load bright value of current modified pixel to register
-mov r13, rbx;
 
 
+cmp r9, 0; ; check if current ray iterator is in pixelArray range
+JL RayWidthLessThanZero
 ;;;;;Start of rays inner loop
 RAYWIDTH: ;Loop to to find max brghness element in slected pixel neighbour
 
 ;if statement to check if selected index is in array range
 
 
-cmp r9, 0; ; check if current ray iterator is in pixelArray range
-JL RayWidthLessThanZero
 xor rax, rax	;load array width
 mov eax, fWidth	;
 cmp r9, rax		;if iterator is already out of array scope jump out of rayWidth loop
@@ -243,13 +241,15 @@ xor rbx, rbx
 mov ebx, fWidth
 inc rdx
 cmp rdx, rbx
-JL PictureWidth;end of WIDTH loop
+JL PictureWidth
+;########end of WIDTH loop########
 
 xor rbx, rbx
 mov ebx, endRow
 inc rcx
 cmp rcx, rbx; 
-JL PictureHeight;end of HEIGHT loop
+JL PictureHeight
+;########end of HEIGHT loop#######
 
 
 

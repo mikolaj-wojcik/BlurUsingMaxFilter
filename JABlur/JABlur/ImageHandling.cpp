@@ -19,7 +19,7 @@ double ImageHandling::run() {
 	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
 	start = std::chrono::high_resolution_clock::now();
 	if(true)
-		callCppLibFunction();
+		callLibFunction();
 	else{}
 
 	end = std::chrono::high_resolution_clock::now();
@@ -235,15 +235,21 @@ double ImageHandling::singleColorPixelBightness(std::byte color) {
 }
 
 void ImageHandling::setNumberOfThreads(int num) {
-	numberOfThreads = num;
+	//numberOfThreads = num;
+}
+
+void ImageHandling::changeLib(bool newVal) {
+	libUsed = newVal;
 }
 
 
-void ImageHandling::callCppLibFunction() {
+void ImageHandling::callLibFunction() {
 	typedef int(_stdcall* maxFilter)(parametersStruct, std::byte*, std::byte*, int16_t*);
 	HINSTANCE dllHandler = NULL;
-	//dllHandler = LoadLibrary(L"AsmBlur.dll");
-	dllHandler = LoadLibrary(L"BlurringLib.dll");
+	if(libUsed)
+		dllHandler = LoadLibrary(L"BlurringLib.dll");
+	else
+		dllHandler = LoadLibrary(L"AsmBlur.dll");
 	maxFilter filter = (maxFilter)GetProcAddress(dllHandler, "maxFilter");
 
 
@@ -260,6 +266,7 @@ void ImageHandling::callCppLibFunction() {
 
 	parametersStruct* p = new parametersStruct(packToStruct(width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray));
 	filter(parametersStruct(packToStruct(width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray)), pixelArray, outputArray, brightnessArray);
+	//filter(p, pixelArray, outputArray, brightnessArray);
 	delete p;
 	//maxFilter(pixelArray, outputArray, brightnessArray, width, height, height, 0, ray);
 	/*
@@ -299,46 +306,3 @@ parametersStruct ImageHandling::packToStruct(
 
 
 
-
-
-
-
-
-
-
-
-
-
-//########
-//methodhod to be in library
-//output array already initialized
-//possible optimalization- break if currentMaxBright == 1000
-
-void ImageHandling::maxFilter(
-	std::byte* inputArr, std::byte* outputArr, int16_t* brightArr,
-	int32_t fWitdh, int32_t fHeight, int32_t fNumOfRowsToToDo,
-	int32_t startRow, int32_t fRay) {
-	int brightestIndex;
-	int currentMaxBright;
-	for (int h = startRow; h < startRow + fNumOfRowsToToDo; h++) {
-		for (int w = 0; w < fWitdh; w++) {
-			brightestIndex = h * fWitdh + w;
-			currentMaxBright = 0;
-			for (int hRay = -fRay; hRay < fRay; hRay++) {
-				if (hRay + h >= 0 && hRay + h < fHeight) {
-					for (int wRay = -fRay; wRay < fRay; wRay++) {
-						if (wRay + w >= 0 && wRay + w < fWitdh) {
-							if (brightArr[(hRay + h) * fWitdh + wRay + w] > currentMaxBright) {
-								brightestIndex = (hRay + h) * fWitdh + wRay + w;
-								currentMaxBright = brightArr[(hRay + h) * fWitdh + wRay + w];
-							}
-						}
-					}
-				}
-			}
-			outputArr[(h * fWitdh + w) * 3] = inputArr[brightestIndex * 3];
-			outputArr[(h * fWitdh + w) * 3 + 1] = inputArr[brightestIndex * 3 + 1];
-			outputArr[(h * fWitdh + w) * 3 + 2] = inputArr[brightestIndex * 3 + 2];
-		}
-	}
-}

@@ -16,6 +16,7 @@ void Listener::changeThreads(QString newNumber) {
 
 void Listener::changeLib(bool newValue) {
 	selectedLib = newValue;
+	img.changeLib(newValue);
 }
 
 void Listener::save(QString path) {

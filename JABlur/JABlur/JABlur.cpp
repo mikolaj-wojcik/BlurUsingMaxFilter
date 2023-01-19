@@ -9,8 +9,8 @@ JABlur::JABlur(QWidget *parent)
     QObject::connect(ui.pushButton_2, SIGNAL(clicked()), this, SLOT(saveButtonPressed()));
     QObject::connect(ui.pushButton_3, SIGNAL(clicked()), this, SLOT(runProgram()));
     QObject::connect(ui.comboBox, SIGNAL(currentTextChanged(QString)), this, SLOT(changeNumberOfThreads()));
-    QObject::connect(ui.cppRadio, SIGNAL(clicked()), this, SLOT(changeLibraryCpp));
-    QObject::connect(ui.asmRadio, SIGNAL(clicked()), this, SLOT(changeLibraryAsm));
+    QObject::connect(ui.cppRadio, SIGNAL(clicked()), this, SLOT(changeLibraryCpp()));
+    QObject::connect(ui.asmRadio, SIGNAL(clicked()), this, SLOT(changeLibraryAsm()));
     QObject::connect(&listen, SIGNAL(photoModified(QString)), this, SLOT(changeModifiedPicture(QString)));
     QObject::connect(&listen, SIGNAL(newTime(QString)), this, SLOT(insertNewTime(QString)));
     
@@ -21,7 +21,6 @@ JABlur::~JABlur()
 
 
 void JABlur::loadButtonPressed() {
-    std::cout << "Elo!\n";
 
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
         "",
@@ -57,14 +56,9 @@ void JABlur::loadImage(QString src, QLabel* target) {
 void JABlur::changeNumberOfThreads() {
     
     listen.changeThreads(ui.comboBox->currentText());
-    
-    typedef int(_stdcall* maxFilter)(int, int);
-    
-    HINSTANCE dllHandler = NULL;
-    dllHandler = LoadLibrary(L"AsmBlur.dll");
-    maxFilter filter = (maxFilter)GetProcAddress(dllHandler, "MyProc1");
+    numberOfThreads = ui.comboBox->currentText().toInt();
 
-    ui.listWidget->addItem(QString::number(filter(21, 23)));
+    
     
 }
 
