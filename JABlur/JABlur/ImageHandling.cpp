@@ -1,5 +1,9 @@
 #include "ImageHandling.h"
 
+void maxFilter(
+	std::byte* inputArr, std::byte* outputArr, int16_t* brightArr,
+	int32_t fWitdh, int32_t fHeight, int32_t fNumOfRowsToToDo,
+	int32_t startRow, int32_t fRay);
 
 double ImageHandling::run() {
 	if (!loadImage()) {
@@ -169,12 +173,12 @@ void ImageHandling::setPath(std::string str){
 }
 
 
-int32_t* ImageHandling::calculateBrightness() {
+int16_t* ImageHandling::calculateBrightness() {
 	if (pixelArray == nullptr) {
 		return nullptr;
 	}
 	int size = width * height;
-	int32_t* brightArray = new int32_t[size];
+	int16_t* brightArray = new int16_t[size];
 
 	int extraRowsForLastThread = 0;
 	int rowsPerThread = 0;
@@ -203,12 +207,12 @@ int32_t* ImageHandling::calculateBrightness() {
 	return brightArray;
 }
 
-void ImageHandling::threadedBrightness(int32_t* brightArray, int startRow, int endRow) {
+void ImageHandling::threadedBrightness(int16_t* brightArray, int startRow, int endRow) {
 	int startIndex = startRow * width;
 	int endIndex = (endRow-1) * width;
 
 	for (int i = startIndex; i < endIndex; i++) {
-		int32_t pixBright = (int)(1000 * singlePixelBightness(pixelArray[3 * i], pixelArray[3 * i + 1], pixelArray[3 * i + 2]));
+		int16_t pixBright = (int)(1000 * singlePixelBightness(pixelArray[3 * i], pixelArray[3 * i + 1], pixelArray[3 * i + 2]));
 		brightArray[i] = pixBright;
 	}
 }
@@ -236,10 +240,10 @@ void ImageHandling::setNumberOfThreads(int num) {
 
 
 void ImageHandling::callCppLibFunction() {
-	typedef int(_stdcall* maxFilter)(parametersStruct, std::byte*, std::byte*, int32_t*);
+	typedef int(_stdcall* maxFilter)(parametersStruct, std::byte*, std::byte*, int16_t*);
 	HINSTANCE dllHandler = NULL;
-	dllHandler = LoadLibrary(L"AsmBlur.dll");
-	//dllHandler = LoadLibrary(L"BlurringLib.dll");
+	//dllHandler = LoadLibrary(L"AsmBlur.dll");
+	dllHandler = LoadLibrary(L"BlurringLib.dll");
 	maxFilter filter = (maxFilter)GetProcAddress(dllHandler, "maxFilter");
 
 
@@ -252,8 +256,13 @@ void ImageHandling::callCppLibFunction() {
 		rowsForLastThread = rowsPerThread + extraRowsForLastThread;
 	}
 	else
-		rowsForLastThread = height - 1;
+		rowsForLastThread = height ;
 
+	parametersStruct* p = new parametersStruct(packToStruct(width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray));
+	filter(parametersStruct(packToStruct(width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray)), pixelArray, outputArray, brightnessArray);
+	delete p;
+	//maxFilter(pixelArray, outputArray, brightnessArray, width, height, height, 0, ray);
+	/*
 	std::vector<std::thread> threads;
 	for (int i = 0; i < numberOfThreads - 1; i++) {
 		parametersStruct* p = new parametersStruct(packToStruct(pixelArray, outputArray, brightnessArray, width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray));
@@ -270,11 +279,11 @@ void ImageHandling::callCppLibFunction() {
 			trd.join();
 	}
 	//filter(pixelArray, outputArray, brightnessArray, width, height, height, 0, 10);
-
+	*/
 }
 
 
-parametersStruct ImageHandling::packToStruct(std::byte* inputArr, std::byte* outputArr, int32_t* brightArr, 
+parametersStruct ImageHandling::packToStruct( 
 	int32_t fWitdh, int32_t fHeight, int32_t fNumOfRowsToToDo, int32_t startRow, int32_t fRay) {
 	parametersStruct p;
 	p.height = (uint32_t)fHeight;
@@ -304,7 +313,11 @@ parametersStruct ImageHandling::packToStruct(std::byte* inputArr, std::byte* out
 //methodhod to be in library
 //output array already initialized
 //possible optimalization- break if currentMaxBright == 1000
-void ImageHandling::libFunction(std::byte* inputArr, std::byte* outputArr, int32_t* brightArr, int32_t fWitdh, int32_t fHeight, int32_t fNumOfRowsToToDo, int32_t startRow, int32_t fRay) {
+
+void ImageHandling::maxFilter(
+	std::byte* inputArr, std::byte* outputArr, int16_t* brightArr,
+	int32_t fWitdh, int32_t fHeight, int32_t fNumOfRowsToToDo,
+	int32_t startRow, int32_t fRay) {
 	int brightestIndex;
 	int currentMaxBright;
 	for (int h = startRow; h < startRow + fNumOfRowsToToDo; h++) {

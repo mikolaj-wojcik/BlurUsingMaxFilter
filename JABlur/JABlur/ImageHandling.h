@@ -23,7 +23,7 @@ class ImageHandling
 	std::byte* pixelArray = nullptr;
 	std::byte* outputArray = nullptr;
 	//Can hold values between 0(darkest) - 1000(brighest)
-	int32_t* brightnessArray = nullptr;
+	int16_t* brightnessArray = nullptr;
 	int numberOfThreads =1;
 	int ray =12;
 
@@ -36,19 +36,19 @@ class ImageHandling
 
 	void clearOutputArray();
 
-	void threadedBrightness(int32_t* brightArray,int startRow, int endRow);
+	void threadedBrightness(int16_t* brightArray,int startRow, int endRow);
 
 	double singleColorPixelBightness(std::byte color);
 
 	double singlePixelBightness(std::byte blue, std::byte green, std::byte red);
 
 
-	int32_t* calculateBrightness();
+	int16_t* calculateBrightness();
 
-	void libFunction(std::byte* inputArr, std::byte* outputArr, int32_t* brightArr, int32_t fWitdh, int32_t fHeight, int32_t fNumOfRowsToToDo, int32_t startRow, int32_t fRay);
+	void libFunction(std::byte* inputArr, std::byte* outputArr, int16_t* brightArr, int32_t fWitdh, int32_t fHeight, int32_t fNumOfRowsToToDo, int32_t startRow, int32_t fRay);
 
 	void callCppLibFunction();
-	parametersStruct packToStruct(std::byte* inputArr, std::byte* outputArr, int32_t* brightArr, int32_t fWitdh, int32_t fHeight, int32_t fNumOfRowsToToDo, int32_t startRow, int32_t fRay);
+	parametersStruct packToStruct(int32_t fWitdh, int32_t fHeight, int32_t fNumOfRowsToToDo, int32_t startRow, int32_t fRay);
 public:
 
 	ImageHandling(){}

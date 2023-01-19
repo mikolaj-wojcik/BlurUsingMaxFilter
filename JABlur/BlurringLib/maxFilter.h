@@ -1,7 +1,6 @@
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
+#include "paramsStruct.h"
 
 #ifdef MAXFILTERLIBRARY_EXPORTS
 #define MAXFILTERLIBRARY_API __declspec(dllexport)
@@ -12,6 +11,6 @@
 
 
 extern "C" MAXFILTERLIBRARY_API void maxFilter(
-    std::byte* inputArr, std::byte* outputArr, int32_t* brightArr,
-    int32_t fWitdh, int32_t fHeight, int32_t fNumOfRowsToToDo,
-    int32_t startRow, int32_t fRay);
+    parametersStruct p,
+    std::byte* inputArr, std::byte* outputArr, int16_t* brightArr
+    );

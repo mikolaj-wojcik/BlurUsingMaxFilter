@@ -142,6 +142,7 @@
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="maxFilter.h" />
+    <ClInclude Include="paramsStruct.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
