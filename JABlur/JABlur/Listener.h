@@ -10,6 +10,7 @@ class Listener : public QObject{
 private:
 	QString sourceFilePath = "";
 	int numberOfThreads = 1;
+	int ray = 1;
 	bool selectedLib =true; //true cpp, false asm
 	std::array<int, 3> loadedHistogram;
 	std::array<int, 3> modifiedHistogram;
@@ -24,6 +25,7 @@ public:
 	void changeLib(bool newValue);
 	void runModification();
 	void save(QString path);
+	void changeRay(int newRay);
 	//std::array
 public slots:
 	void loadButtonPressed();

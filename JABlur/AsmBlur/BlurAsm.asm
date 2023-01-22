@@ -12,7 +12,7 @@
 ; 0.2- added parameters load (12.01.2023)
 ; 0.3- added loops (18.01.2023)
 ; 0.4- made basic algorith modifyng picture (19.01.2023)
-;
+; 0.5- fixed bug that top rows hasnt been blurred correctly(20.01.2023)
 ;
 ;
 ;----------------------------------------------------------------
@@ -47,6 +47,7 @@ mov rAX, [RCX]
 add rcx, 4  ; przesunie�ie ma by� o 8  trzeba za�adowa� do rejestru eax
 mov fWidth, eax
 mov rax, [RCX]
+sub eax, 1; w sumie to nwm czemu ole dzięki temu nie ma artefaktów
 mov fHeight, eax
 add rcx, 4  ; przesunie�ie ma by� o 8  trzeba za�adowa� do rejestru eax
 mov rax, [RCX]
@@ -125,11 +126,13 @@ xor rax, rax
 mov eax, fWidth; load width offset to calculate index
 imul rax, rcx; multply by already processed rows of picture
 add rax, rdx; add number of columns already processed
-mov r12, rax; save index of current modyfing index to regiuter
+mov r12, rax; save index of current modyfing index to register
 imul rax,2
 add rax, brightArr
+xor rbx, rbx
 mov bx, word ptr[rax];load bright value of current modified pixel to register
-mov r13, rbx;
+;mov r13, rbx;
+mov r13, 0
 
 
 
@@ -140,19 +143,21 @@ mov eax, fHeight
 
 
 
-;if statement to check if selected index is in array range
-cmp r8, 0; check if current ray iterator is in pixelArray range
-JL RayHeightLessThanZero ;if iterarto is lesst than zero load zero to start iterating
 ;;;;;Start of rays  outer loop
 RAYHEIGHT: ;Loop to to find max brghness element in slected pixel neighbour
 
 
+;if statement to check if selected index is in array range
+cmp r8, 0; check if current ray iterator is in pixelArray range
+;JL RayHeightLessThanZero ;if iterator is less than zero load zero to start iterating
+JL RayWidthEndLoop ;if iterator is less than zero load zero to start iterating
 xor rax, rax
 mov eax, fHeight	;load number of picture rows
 cmp r8, rax; check if ray iterator is still in pixelArray range
-JGE RayHeightEndLoop ; if not, exit all ray loops
-
+;JGE RayHeightEndLoop ; if not, exit all ray loops
+JGE RayWidthEndLoop
 RayHeightAfterEvZero:
+
 ;initializng itarator through width of 
 ;kernel to select maxBrightness element
 
@@ -163,18 +168,20 @@ sub r9, rbx
 
 
 
-cmp r9, 0; ; check if current ray iterator is in pixelArray range
-JL RayWidthLessThanZero
 ;;;;;Start of rays inner loop
 RAYWIDTH: ;Loop to to find max brghness element in slected pixel neighbour
 
 ;if statement to check if selected index is in array range
 
 
+cmp r9, 0; ; check if current ray iterator is in pixelArray range
+JL RayWidthLessThanZero
+;JL retFromSave
 xor rax, rax	;load array width
 mov eax, fWidth	;
 cmp r9, rax		;if iterator is already out of array scope jump out of rayWidth loop
 JGE RayWidthEndLoop
+;JGE retFromSave
 RayWidthAfterEvZero:
 
 ;Comparing bright Value of neighbour pixel to select max value
@@ -188,9 +195,12 @@ mov r14, rax; temproary save index
 imul rax, 2; multiply by width of DWORD
 add rax, brightArr
 
+xor rbx, rbx
 mov bx, word ptr[rax]; load bright value
 cmp rbx, r13; check if new value is higher than current highest
-JG saveNewValue;if yes save nev value and index
+JG saveNewValue;if yes save new value and index
+cmp r13, 1000
+JE RayHeightEndLoop
 retFromSave:
 
 
@@ -211,10 +221,20 @@ RayHeightEndLoop:
 ;Place to put pixel moving
 ;
 
+;xor rax, rax
+;mov eax, fWidth
+;imul rax, rcx
+;add rax, rdx
+;imul rax, 3
+;add rax, inputArr
+
 mov rax, r12
 imul rax, 3
 add rax, inputArr
-
+;xord xmm0, xmm0
+;or xmm1, xmm1
+;xor xmm2, xmm2
+VZEROALL 
 VPBROADCASTB  xmm0, byte ptr [rax]
 inc rax
 VPBROADCASTB  xmm1, byte ptr [rax]
@@ -228,13 +248,15 @@ add rax, rdx
 imul rax, 3
 add rax, outputArr
 
-movd r12, xmm0
-movd r13, xmm1
-movd r14, xmm2
+movd r12d, xmm0
+movd r13d, xmm1
+movd r14d, xmm2
 
 mov byte ptr[rax], r12b
-mov byte ptr[rax+1], r13b
-mov byte ptr[rax+2], r14b
+inc rax
+mov byte ptr[rax], r13b
+inc rax
+mov byte ptr[rax], r14b
 
 
 xor rbx, rbx
@@ -265,6 +287,7 @@ mov r9, 0
 JMP RayWidthAfterEvZero
 
 SaveNewValue:
+xor r13, r13
 mov r13, rbx; save new value
 mov r12, r14;save index
 JMP retFromSave

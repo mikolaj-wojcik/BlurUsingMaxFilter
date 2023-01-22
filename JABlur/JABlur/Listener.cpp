@@ -19,6 +19,11 @@ void Listener::changeLib(bool newValue) {
 	img.changeLib(newValue);
 }
 
+void Listener::changeRay(int newRay) {
+	ray = newRay;
+	img.setRay(newRay);
+}
+
 void Listener::save(QString path) {
 	img.saveImage(path.toStdString());
 }
@@ -34,11 +39,12 @@ void Listener::runModification() {
 		std::string timeString = std::to_string(timeElapsed);
 		
 		if (selectedLib) {
-			timeString = "C++    " + std::to_string(numberOfThreads) + "      " + timeString;
+			timeString = "C++    " + timeString;
 		}
 		else {
-			timeString = "Asm    " + std::to_string(numberOfThreads) + "      " + timeString;
+			timeString = "Asm    " + timeString;
 		}
+		timeString += "     " + std::to_string(ray) + "    " + std::to_string(numberOfThreads);
 		emit photoModified("temp.bmp");
 		emit newTime(QString::fromStdString(timeString));
 

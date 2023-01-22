@@ -26,7 +26,7 @@ class ImageHandling
 	//Can hold values between 0(darkest) - 1000(brighest)
 	int16_t* brightnessArray = nullptr;
 	int numberOfThreads =1;
-	int ray =20;
+	int ray =1;
 
 	bmpFileHeader tempHead;
 	bmpInfoHeader tempInfo;
@@ -65,5 +65,6 @@ public:
 	void saveImage(std::string);
 	void setNumberOfThreads(int num);
 	void changeLib(bool newVal);
+	void setRay(int fRay);
 };
 

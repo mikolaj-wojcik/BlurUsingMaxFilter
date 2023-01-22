@@ -4,7 +4,7 @@ JABlur::JABlur(QWidget *parent)
     : QMainWindow(parent)
 {
     ui.setupUi(this);
-    
+    ui.verticalSlider->setRange(1, 50);
     QObject::connect(ui.pushButton, SIGNAL(clicked()), this, SLOT(loadButtonPressed()));
     QObject::connect(ui.pushButton_2, SIGNAL(clicked()), this, SLOT(saveButtonPressed()));
     QObject::connect(ui.pushButton_3, SIGNAL(clicked()), this, SLOT(runProgram()));
@@ -13,6 +13,7 @@ JABlur::JABlur(QWidget *parent)
     QObject::connect(ui.asmRadio, SIGNAL(clicked()), this, SLOT(changeLibraryAsm()));
     QObject::connect(&listen, SIGNAL(photoModified(QString)), this, SLOT(changeModifiedPicture(QString)));
     QObject::connect(&listen, SIGNAL(newTime(QString)), this, SLOT(insertNewTime(QString)));
+    QObject::connect(ui.verticalSlider, SIGNAL(valueChanged(int)), this, SLOT(changeRay(int)));
     
 }
 
@@ -52,6 +53,9 @@ void JABlur::loadImage(QString src, QLabel* target) {
     target->setPixmap(originalfile.scaled(target->width(), target->height(), Qt::KeepAspectRatio));
 }
 
+void JABlur::changeRay(int newRay) {
+    listen.changeRay(newRay);
+}
 
 void JABlur::changeNumberOfThreads() {
     

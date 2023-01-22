@@ -238,6 +238,9 @@ void ImageHandling::setNumberOfThreads(int num) {
 	//numberOfThreads = num;
 }
 
+void ImageHandling::setRay(int fRay) {
+	ray = fRay;
+}
 void ImageHandling::changeLib(bool newVal) {
 	libUsed = newVal;
 }

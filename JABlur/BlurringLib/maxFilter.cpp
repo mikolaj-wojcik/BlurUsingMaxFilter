@@ -20,9 +20,13 @@ void maxFilter(
 			brightestIndex = h * width + w;
 			currentMaxBright = 0;
 			for (int hRay = -fRay; hRay <= fRay; hRay++) {
-				if (hRay + h >= 0 && hRay + h < height) {
+				if (hRay + h >= height)
+					break;
+				if (hRay + h >= 0) {
 					for (int wRay = -fRay; wRay <= fRay; wRay++) {
-						if (wRay + w >= 0 && wRay + w < width) {
+						if (wRay + w >= width)
+							break;
+						if (wRay + w >= 0) {
 							if (brightArr[(hRay + h) * width + wRay + w] > currentMaxBright) {
 								brightestIndex = (hRay + h) * width + wRay + w;
 								currentMaxBright = brightArr[(hRay + h) * width + wRay + w];

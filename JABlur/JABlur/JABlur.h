@@ -23,6 +23,7 @@ public slots:
     void changeNumberOfThreads();
     void changeLibraryAsm() { listen.changeLib(false); }
     void changeLibraryCpp() { listen.changeLib(true); }
+    void changeRay(int newRay);
     void runProgram();
     void changeModifiedPicture(QString path);
     void insertNewTime(QString data);
