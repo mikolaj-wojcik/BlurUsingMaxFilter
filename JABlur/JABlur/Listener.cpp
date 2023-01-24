@@ -52,3 +52,7 @@ void Listener::runModification() {
 
 
 }
+
+std::array<float, 6> Listener::runColorCount() {
+	return img.calculateHistorgrams();
+}

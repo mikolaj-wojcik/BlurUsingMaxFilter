@@ -24,6 +24,8 @@ double ImageHandling::run() {
 
 	end = std::chrono::high_resolution_clock::now();
 
+	calculateHistorgrams();
+
 	saveImage("temp.bmp");
 
 	std::chrono::duration<double> timeElapsed = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
@@ -267,29 +269,23 @@ void ImageHandling::callLibFunction() {
 	else
 		rowsForLastThread = height ;
 
-	parametersStruct* p = new parametersStruct(packToStruct(width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray));
-	filter(parametersStruct(packToStruct(width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray)), pixelArray, outputArray, brightnessArray);
-	//filter(p, pixelArray, outputArray, brightnessArray);
-	delete p;
-	//maxFilter(pixelArray, outputArray, brightnessArray, width, height, height, 0, ray);
-	/*
+	//filter(parametersStruct(packToStruct(width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray)), pixelArray, outputArray, brightnessArray);
+	
+	
 	std::vector<std::thread> threads;
 	for (int i = 0; i < numberOfThreads - 1; i++) {
-		parametersStruct* p = new parametersStruct(packToStruct(pixelArray, outputArray, brightnessArray, width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray));
-		//threads.push_back(std::thread(filter, p));
-		delete p;
+		
+		threads.push_back(std::thread(filter, packToStruct(width, height, (i+1)*rowsPerThread, i * rowsPerThread, ray), pixelArray, outputArray, brightnessArray));
+		
 	}
-	//parametersStruct* p = new parametersStruct(packToStruct(pixelArray, outputArray, brightnessArray, width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray));
-	parametersStruct p = packToStruct(pixelArray, outputArray, brightnessArray, width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray);
-	threads.push_back(std::thread(filter,p, pixelArray, outputArray, brightnessArray));
-	//delete p;
+	threads.push_back(std::thread(filter, packToStruct(width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray), pixelArray, outputArray, brightnessArray));
+	
 
 	for (auto& trd : threads) {
 		if (trd.joinable())
 			trd.join();
 	}
-	//filter(pixelArray, outputArray, brightnessArray, width, height, height, 0, 10);
-	*/
+	
 }
 
 
@@ -306,6 +302,39 @@ parametersStruct ImageHandling::packToStruct(
 	return p;
 }
 
+                                             
+std::array<float,6> ImageHandling::calculateHistorgrams() {
+	std::array<float, 6> colorTab;
+	std::array<int, 3> inColor;
+	std::array<int, 3> outColor ;
+	int size = width * height;
+	int imgSize = width * height;
+	if (numberOfThreads > 1) {
+		std::thread in = std::thread(&ImageHandling::oneColorHistogram, this,pixelArray, std::ref(inColor));
+		std::thread out = std::thread(&ImageHandling::oneColorHistogram, this, outputArray, std::ref(outColor));
+		in.join();
+		out.join();
+	}
+	else {
+		oneColorHistogram(pixelArray, inColor);
+		oneColorHistogram(outputArray, outColor);
+	}
+	for (int i = 0; i < 3; i++) {
+		colorTab[i] = inColor[i] / size;
+		colorTab[i + 3] = outColor[i] / size;
+	}
 
+	return colorTab;
+}
 
+void ImageHandling::oneColorHistogram(std::byte* arr, std::array<int,3>& retValue) {
+	for (auto& it : retValue) {
+		it = 0;
+	}
+	for (int i = 0; i < width * height * 3; i ++) {
+		retValue[0] += (int)arr[i++];
+		retValue[1] += (int)arr[i++];
+		retValue[2] += (int)arr[i];
+	}
 
+}

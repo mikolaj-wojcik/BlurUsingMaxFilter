@@ -26,7 +26,8 @@ public:
 	void runModification();
 	void save(QString path);
 	void changeRay(int newRay);
-	//std::array
+
+	std::array<float, 6> runColorCount();
 public slots:
 	void loadButtonPressed();
 	void changeThreads(QString newNumber);

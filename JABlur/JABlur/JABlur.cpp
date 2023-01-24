@@ -77,4 +77,42 @@ void JABlur::insertNewTime(QString data) {
 
 void JABlur::runProgram() {
     listen.runModification();
+    createHistograms(listen.runColorCount());
+}
+
+void JABlur::createHistograms(std::array<float, 6> colorTab){
+    QBarSet* redSet = new QBarSet("Red");
+    QBarSet* greenSet = new QBarSet("Green");
+    QBarSet* blueSet = new QBarSet("Blue");
+    redSet->setColor(Qt::red);
+    blueSet->setColor(Qt::blue);
+    greenSet->setColor(Qt::green);
+
+    *blueSet << colorTab[0] << colorTab[3];
+    *greenSet << colorTab[1] << colorTab[4];
+    *redSet << colorTab[2] << colorTab[5];
+
+    QBarSeries* series = new QBarSeries();
+    series->append(redSet);
+    series->append(greenSet);
+    series->append(blueSet);
+
+    QChart* chart = new QChart();
+    chart->addSeries(series);
+    
+    QStringList cats;
+    cats << "Before" << "After";
+    QBarCategoryAxis* axisX = new QBarCategoryAxis();
+    axisX->append(cats);
+    chart->addAxis(axisX, Qt::AlignBottom);
+    series->attachAxis(axisX);
+
+    int maxArrVal = *std::max_element(colorTab.begin(), colorTab.end());
+    QValueAxis* axisY = new QValueAxis();
+    axisY->setRange(0, maxArrVal);
+    chart->addAxis(axisY, Qt::AlignLeft);
+    series->attachAxis(axisY);
+    QChartView* chartView = new QChartView(chart);
+    ui.gridLayout->addWidget(chartView,1,1);
+
 }

@@ -1,9 +1,17 @@
 #pragma once
 
 #include <QtWidgets/QMainWindow>
+#include <QBarSet>
+#include <QBarSeries>
+#include <QChart>
+#include<QtCharts/qchartview.h>
+#include <QChartView>
+#include <QBarCategoryAxis>
+#include <QValueAxis>
 #include <qdebug.h>
 #include <qfiledialog.h>
 #include <iostream>
+#include <array>
 #include "ui_JABlur.h"
 #include "Listener.h"
 
@@ -34,5 +42,6 @@ private:
     int numberOfThreads = 1;
     bool selectedLib; //true cpp, false asm
     void loadImage(QString path, QLabel* target);
+    void createHistograms(std::array<float, 6> colorTab);
     QString tempFilePath;
 };

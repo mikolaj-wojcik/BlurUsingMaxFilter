@@ -10,6 +10,7 @@
 #include <math.h>
 #include <windows.h>
 #include <chrono>
+#include <array>
 #include "bmpStruct.h"
 #include "parametersToAssembly.h"
 
@@ -44,6 +45,9 @@ class ImageHandling
 	double singlePixelBightness(std::byte blue, std::byte green, std::byte red);
 
 
+	void oneColorHistogram(std::byte* arr, std::array<int,3>& retValue);
+
+
 	int16_t* calculateBrightness();
 
 	void libFunction(std::byte* inputArr, std::byte* outputArr, int16_t* brightArr, int32_t fWitdh, int32_t fHeight, int32_t fNumOfRowsToToDo, int32_t startRow, int32_t fRay);
@@ -66,5 +70,6 @@ public:
 	void setNumberOfThreads(int num);
 	void changeLib(bool newVal);
 	void setRay(int fRay);
+	std::array<float, 6> calculateHistorgrams();
 };
 
