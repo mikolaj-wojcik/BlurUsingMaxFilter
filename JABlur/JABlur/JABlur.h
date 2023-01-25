@@ -35,13 +35,15 @@ public slots:
     void runProgram();
     void changeModifiedPicture(QString path);
     void insertNewTime(QString data);
+    void chFileCanBeSaved() { fileCanBeSaved = true; }
+    void createHistograms(std::array<float, 6> colorTab);
 private:
     Ui::JABlurClass ui;
     Listener listen;
 
     int numberOfThreads = 1;
     bool selectedLib; //true cpp, false asm
+    bool fileCanBeSaved = false;
     void loadImage(QString path, QLabel* target);
-    void createHistograms(std::array<float, 6> colorTab);
     QString tempFilePath;
 };

@@ -14,6 +14,8 @@ JABlur::JABlur(QWidget *parent)
     QObject::connect(&listen, SIGNAL(photoModified(QString)), this, SLOT(changeModifiedPicture(QString)));
     QObject::connect(&listen, SIGNAL(newTime(QString)), this, SLOT(insertNewTime(QString)));
     QObject::connect(ui.verticalSlider, SIGNAL(valueChanged(int)), this, SLOT(changeRay(int)));
+    QObject::connect(&listen, SIGNAL(histogramsData(std::array<float, 6>)), this, SLOT(createHistograms(std::array<float, 6>)));
+    QObject::connect(&listen, SIGNAL(fileCanSave()), this, SLOT(chFileCanBeSaved()));
     
 }
 
@@ -37,11 +39,13 @@ void JABlur::loadButtonClicked() {
 }
 
 void JABlur::saveButtonPressed() {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"),
-        "",
-        tr("Images (*.bmp)"));
-    if (fileName != "") {
-        listen.save(fileName);
+    if (fileCanBeSaved) {
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"),
+            "",
+            tr("Images (*.bmp)"));
+        if (fileName != "") {
+            listen.save(fileName);
+        }
     }
 }
 
@@ -77,7 +81,7 @@ void JABlur::insertNewTime(QString data) {
 
 void JABlur::runProgram() {
     listen.runModification();
-    createHistograms(listen.runColorCount());
+    //createHistograms(listen.runColorCount());
 }
 
 void JABlur::createHistograms(std::array<float, 6> colorTab){

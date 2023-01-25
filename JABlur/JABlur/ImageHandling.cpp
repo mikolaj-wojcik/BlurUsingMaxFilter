@@ -18,15 +18,15 @@ double ImageHandling::run() {
 	//libFunction(pixelArray, outputArray, brightnessArray, width, height, height, 0, 10);
 	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
 	start = std::chrono::high_resolution_clock::now();
-	if(true)
-		callLibFunction();
-	else{}
+	
+	callLibFunction();
+	
 
 	end = std::chrono::high_resolution_clock::now();
 
 	calculateHistorgrams();
 
-	saveImage("temp.bmp");
+	saveImage(outputPath);
 
 	std::chrono::duration<double> timeElapsed = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
 	return timeElapsed.count();
@@ -255,37 +255,39 @@ void ImageHandling::callLibFunction() {
 		dllHandler = LoadLibrary(L"BlurringLib.dll");
 	else
 		dllHandler = LoadLibrary(L"AsmBlur.dll");
-	maxFilter filter = (maxFilter)GetProcAddress(dllHandler, "maxFilter");
+
+	if (dllHandler != NULL) {
+		maxFilter filter = (maxFilter)GetProcAddress(dllHandler, "maxFilter");
 
 
-	int extraRowsForLastThread = 0;
-	int rowsPerThread = 0;
-	int rowsForLastThread = 0;
-	if (numberOfThreads > 1) {
-		extraRowsForLastThread = height % numberOfThreads;
-		rowsPerThread = (height - extraRowsForLastThread) / (numberOfThreads);
-		rowsForLastThread = rowsPerThread + extraRowsForLastThread;
+		int extraRowsForLastThread = 0;
+		int rowsPerThread = 0;
+		int rowsForLastThread = 0;
+		if (numberOfThreads > 1) {
+			extraRowsForLastThread = height % numberOfThreads;
+			rowsPerThread = (height - extraRowsForLastThread) / (numberOfThreads);
+			rowsForLastThread = rowsPerThread + extraRowsForLastThread;
+		}
+		else
+			rowsForLastThread = height;
+
+		//filter(parametersStruct(packToStruct(width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray)), pixelArray, outputArray, brightnessArray);
+
+
+		std::vector<std::thread> threads;
+		for (int i = 0; i < numberOfThreads - 1; i++) {
+
+			threads.push_back(std::thread(filter, packToStruct(width, height, (i + 1) * rowsPerThread, i * rowsPerThread, ray), pixelArray, outputArray, brightnessArray));
+
+		}
+		threads.push_back(std::thread(filter, packToStruct(width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray), pixelArray, outputArray, brightnessArray));
+
+
+		for (auto& trd : threads) {
+			if (trd.joinable())
+				trd.join();
+		}
 	}
-	else
-		rowsForLastThread = height ;
-
-	//filter(parametersStruct(packToStruct(width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray)), pixelArray, outputArray, brightnessArray);
-	
-	
-	std::vector<std::thread> threads;
-	for (int i = 0; i < numberOfThreads - 1; i++) {
-		
-		threads.push_back(std::thread(filter, packToStruct(width, height, (i+1)*rowsPerThread, i * rowsPerThread, ray), pixelArray, outputArray, brightnessArray));
-		
-	}
-	threads.push_back(std::thread(filter, packToStruct(width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray), pixelArray, outputArray, brightnessArray));
-	
-
-	for (auto& trd : threads) {
-		if (trd.joinable())
-			trd.join();
-	}
-	
 }
 
 
@@ -337,4 +339,9 @@ void ImageHandling::oneColorHistogram(std::byte* arr, std::array<int,3>& retValu
 		retValue[2] += (int)arr[i];
 	}
 
+}
+
+
+void ImageHandling::deleteTempPic() {
+	std::filesystem::remove(outputPath);
 }

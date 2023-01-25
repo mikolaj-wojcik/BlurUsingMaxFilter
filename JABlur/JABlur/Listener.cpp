@@ -29,9 +29,9 @@ void Listener::save(QString path) {
 }
 
 void Listener::runModification() {
-	QString temp = "C:\\Users\\Mikolaj\\Pictures\\football.png";
+	
 
-	if (sourceFilePath != "") {
+	if (!sourceFilePath.isEmpty()) {
 
 		img.setPath(sourceFilePath.toStdString());
 
@@ -47,7 +47,8 @@ void Listener::runModification() {
 		timeString += "     " + std::to_string(ray) + "    " + std::to_string(numberOfThreads);
 		emit photoModified("temp.bmp");
 		emit newTime(QString::fromStdString(timeString));
-
+		emit histogramsData(runColorCount());
+		emit fileCanSave();
 	}
 
 

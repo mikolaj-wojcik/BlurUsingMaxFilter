@@ -11,6 +11,7 @@
 #include <windows.h>
 #include <chrono>
 #include <array>
+#include <filesystem>
 #include "bmpStruct.h"
 #include "parametersToAssembly.h"
 
@@ -21,7 +22,7 @@ class ImageHandling
 	int32_t width;
 	int32_t height;
 	std::string inputPath;
-	std::string outputPath = "out.bmp";
+	std::string outputPath = "temp.bmp";
 	std::byte* pixelArray = nullptr;
 	std::byte* outputArray = nullptr;
 	//Can hold values between 0(darkest) - 1000(brighest)
@@ -37,7 +38,7 @@ class ImageHandling
 	void clearArray();
 
 	void clearOutputArray();
-
+	void deleteTempPic();
 	void threadedBrightness(int16_t* brightArray,int startRow, int endRow);
 
 	double singleColorPixelBightness(std::byte color);
@@ -61,6 +62,7 @@ public:
 	~ImageHandling() {
 		clearArray();
 		clearBrightArray();
+		deleteTempPic();
 	}
 
 	double run();

@@ -8,7 +8,7 @@
 class Listener : public QObject{
 	Q_OBJECT
 private:
-	QString sourceFilePath = "";
+	QString sourceFilePath="";
 	int numberOfThreads = 1;
 	int ray = 1;
 	bool selectedLib =true; //true cpp, false asm
@@ -34,5 +34,7 @@ public slots:
 signals:
 	void photoModified(QString tempPath);
 	void newTime(QString time);
+	void histogramsData(std::array<float, 6> arr);
+	void fileCanSave();
 };
 

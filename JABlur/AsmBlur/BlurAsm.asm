@@ -21,7 +21,7 @@
 
 inputArr qWORD 0; variable which stores adress of input array
 outputArr QWORD 0;  variable which stores adress of output array
-brightArr qWORD 0 variable which stores adress of pixel brightness array
+brightArr qWORD 0; variable which stores adress of pixel brightness array
 fWidth dWORD 0; width of image
 fHeight dWORD 0; heigh of image
 fNumOfRowsToDo dWORD 0; 
@@ -191,63 +191,68 @@ JE RayHeightEndLoop; if yes end search
 retFromSave:
 
 
-inc r9 ;increment current 
-cmp r9, r11
-JLE RAYWIDTH;end of RAYWIDTH loop
+inc r9 ;increment current width iterator through width
+cmp r9, r11; check if ray itertor is in kernel height range
+JLE RAYWIDTH;if not, end of RAYWIDTH loop
 RayWidthEndLoop:
 
 
 
-inc r8
-cmp r8, r10
-JLE RaYHEIGHT;end of RAYHEIGHT loop
+inc r8 ;increment current width iterator through height
+cmp r8, r10; check if ray height iterator is in kernel height range
+JLE RaYHEIGHT;if not, end of RAYHEIGHT loop
 
 RayHeightEndLoop:
 
+;procedure to copy to modyfing pixel data of brightest pixel in arrea
 
-mov rax, r12
-imul rax, 3
-add rax, inputArr
-;xord xmm0, xmm0
-;or xmm1, xmm1
-;xor xmm2, xmm2
-VZEROALL 
-VPBROADCASTB  xmm0, byte ptr [rax]
-inc rax
-VPBROADCASTB  xmm1, byte ptr [rax]
-inc rax
-VPBROADCASTB  xmm2, byte ptr [rax]
+mov rax, r12 ; losad index of broghtest pixel
+imul rax, 3; multiply by offest caused by fact that each pixel has 3 bytes
+add rax, inputArr; add adress to array to get starting index of a pixel
 
-xor rax, rax
-mov eax, fWidth
-imul rax, rcx
-add rax, rdx
-imul rax, 3
-add rax, outputArr
+xor rbx, rbx
+mov ebx, fWidth
+imul rbx, rcx
+
+cmp rbx, rax; check if brightest pixel and modifing pixel is the same
+JE skipCopy; if yes skip procedure of copying
+
+add rbx, rdx
+imul rbx, 3
+add rbx, outputArr
+
+
+VPBROADCASTB  xmm0, byte ptr [rax]; load blue pixel data to regiter
+inc rax
+VPBROADCASTB  xmm1, byte ptr [rax]; load green pixel data to regiter
+inc rax
+VPBROADCASTB  xmm2, byte ptr [rax]; load red pixel data to regiter
+
 
 movd r12d, xmm0
 movd r13d, xmm1
 movd r14d, xmm2
 
-mov byte ptr[rax], r12b
+mov byte ptr[rax], r12b ; save pixel data in outputArr
 inc rax
 mov byte ptr[rax], r13b
 inc rax
 mov byte ptr[rax], r14b
 
+skipCopy:; if modified pixel and source pixel is the same skip operation
 
 xor rbx, rbx
 mov ebx, fWidth
 inc rdx
-cmp rdx, rbx
-JL PictureWidth
+cmp rdx, rbx ;copmpare if width iterator is still in picture tange,
+JL PictureWidth; if not start modyfing new row
 ;########end of WIDTH loop########
 
 xor rbx, rbx
 mov ebx, endRow
 inc rcx
-cmp rcx, rbx; 
-JL PictureHeight
+cmp rcx, rbx; compare if heght itertor is in designed range
+JL PictureHeight; if not end procedure and exit function
 ;########end of HEIGHT loop#######
 
 
@@ -255,14 +260,17 @@ JL PictureHeight
 
 ret
 
+;Procedures to move zero into iterator if ray height iterator is out of picture range
 RayHeightLessThanZero:
 mov r8, 0
 JMP RayHeightAfterEvZero
 
+;Procedures to move zero into iterator if ray width iterator is out of picture range
 RayWidthLessThanZero:
 mov r9, 0
 JMP RayWidthAfterEvZero
 
+;procedure called when new vale is hisgher than current highest
 SaveNewValue:
 xor r13, r13
 mov r13, rbx; save new value
