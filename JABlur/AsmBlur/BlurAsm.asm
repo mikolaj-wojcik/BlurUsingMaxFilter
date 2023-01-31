@@ -14,7 +14,7 @@
 ; 0.4- made algorithm modifying picture (19.01.2023)
 ; 0.5- fixed bug that top rows hasnt been blurred correctly(20.01.2023)
 ; 1.0- added comments and removed dead code (24.01.223)
-;
+; 1.1- partially removed threding problem
 ;----------------------------------------------------------------
 
 .data
@@ -41,12 +41,14 @@ maxFilter proc
 
 mov rAX, [RCX]
 add rcx, 4  ; offset iterator to get access to next vaklue of struct
+;sub eax, 1; w sumie to nwm czemu ole dzięki temu nie ma artefaktów
 mov fWidth, eax
 mov rax, [RCX]
 sub eax, 1; w sumie to nwm czemu ole dzięki temu nie ma artefaktów
 mov fHeight, eax
 add rcx, 4  ; offset iterator to get access to next vaklue of struct
 mov rax, [RCX]
+;add eax, 1000; w sumie to nwm czemu ole dzięki temu nie ma artefaktów
 mov fNumOfRowsToDo, eax
 add rcx, 4  ; offset iterator to get access to next vaklue of struct
 mov rax, [RCX]
@@ -59,7 +61,7 @@ mov outputArr, r8
 mov brightArr, r9
 
 
-xor rax, rax
+
 
 
 ;rcx- iterator through main array
@@ -69,14 +71,21 @@ xor rax, rax
 ;;;;;;;;;;;;;;;;;;;;
 ;Initializng start and end index of main loop
 
+xor rax, rax
 xor rcx, rcx
 xor rdx, rdx ; clear index registers
 mov ecx, startRow; 
-mov ebx,  fWidth
-imul ecx, ebx ; calculate starting index of pixel array
-;imul ecx, 3 ;each pixel contains 3 elements in array
+
+
+
 mov edx, startRow; load starting index to end index register
 add edx, fNumOfRowsToDo; get last row number required to edit
+mov eax, fHeight
+cmp edx, eax
+JG endRowOut
+
+endRowOutRet:
+
 mov endRow, edx; save last row
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -133,7 +142,7 @@ mov eax, fHeight
 ;rbx is used to store fRay value
 
 cmp r8, 0; check if current ray iterator is in pixelArray range
-JL RayWidthEndLoop ;if iterator is less than zero load zero to start iterating alredy in picture
+JL RayHeightLessThanZero ;if iterator is less than zero load zero to start iterating alredy in picture
 
 
 ;;;;;Start of rays  outer loop
@@ -141,9 +150,10 @@ RAYHEIGHT: ;Loop to to find max brghness element in slected pixel neighbour
 
 xor rax, rax
 mov eax, fHeight	;load number of picture rows
+
 cmp r8, rax; check if ray iterator is still in pixelArray range
 
-JGE RayWidthEndLoop
+JGE RayHeightEndLoop
 RayHeightAfterEvZero:
 
 ;initializng itarator through width of 
@@ -156,14 +166,15 @@ sub r9, rbx
 
 
 
+cmp r9, 0; ; check if current ray iterator is in pixelArray range
+JL RayWidthLessThanZero
+
 ;;;;;Start of rays inner loop
 RAYWIDTH: ;Loop to to find max brghness element in slected pixel neighbour
 
 ;if statement to check if selected index is in array range
 
 
-cmp r9, 0; ; check if current ray iterator is in pixelArray range
-JL RayWidthLessThanZero
 xor rax, rax	;
 mov eax, fWidth	;load array width
 cmp r9, rax		;if iterator is already out of array scope jump out of rayWidth loop
@@ -186,14 +197,15 @@ xor rbx, rbx
 mov bx, word ptr[rax]; load bright value
 cmp rbx, r13; check if new value is higher than current highest
 JG saveNewValue;if yes save new value and index
-cmp r13, 1000; check if max brightness value has been found
-JE RayHeightEndLoop; if yes end search
+;cmp r13, 1000; check if max brightness value has been found
+;JE RayHeightEndLoop; if yes end search
 retFromSave:
 
 
 inc r9 ;increment current width iterator through width
-cmp r9, r11; check if ray itertor is in kernel height range
+cmp r9, r11; check if ray itertor is in kernel width range
 JLE RAYWIDTH;if not, end of RAYWIDTH loop
+;######End Of Ray Width######
 RayWidthEndLoop:
 
 
@@ -202,42 +214,37 @@ inc r8 ;increment current width iterator through height
 cmp r8, r10; check if ray height iterator is in kernel height range
 JLE RaYHEIGHT;if not, end of RAYHEIGHT loop
 
+;######End Of Ray Height######
 RayHeightEndLoop:
-
 ;procedure to copy to modyfing pixel data of brightest pixel in arrea
 
-mov rax, r12 ; losad index of broghtest pixel
-imul rax, 3; multiply by offest caused by fact that each pixel has 3 bytes
-add rax, inputArr; add adress to array to get starting index of a pixel
+mov rax, r12
+imul rax, 3
+add rax, inputArr
 
-xor rbx, rbx
-mov ebx, fWidth
-imul rbx, rcx
-
-cmp rbx, rax; check if brightest pixel and modifing pixel is the same
-JE skipCopy; if yes skip procedure of copying
-
-add rbx, rdx
-imul rbx, 3
-add rbx, outputArr
-
-
-VPBROADCASTB  xmm0, byte ptr [rax]; load blue pixel data to regiter
+VZEROALL 
+VPBROADCASTB  xmm0, byte ptr [rax]
 inc rax
-VPBROADCASTB  xmm1, byte ptr [rax]; load green pixel data to regiter
+VPBROADCASTB  xmm1, byte ptr [rax]
 inc rax
-VPBROADCASTB  xmm2, byte ptr [rax]; load red pixel data to regiter
+VPBROADCASTB  xmm2, byte ptr [rax]
 
 
+xor rax, rax
+mov eax, fWidth
+imul rax, rcx
+add rax, rdx
+imul rax, 3
+add rax, outputArr
 movd r12d, xmm0
 movd r13d, xmm1
 movd r14d, xmm2
-
-mov byte ptr[rax], r12b ; save pixel data in outputArr
+mov byte ptr[rax], r12b
 inc rax
 mov byte ptr[rax], r13b
 inc rax
 mov byte ptr[rax], r14b
+
 
 skipCopy:; if modified pixel and source pixel is the same skip operation
 
@@ -256,7 +263,7 @@ JL PictureHeight; if not end procedure and exit function
 ;########end of HEIGHT loop#######
 
 
-
+;mov Rax, outputArr
 
 ret
 
@@ -272,9 +279,13 @@ JMP RayWidthAfterEvZero
 
 ;procedure called when new vale is hisgher than current highest
 SaveNewValue:
-xor r13, r13
+
 mov r13, rbx; save new value
 mov r12, r14;save index
 JMP retFromSave
+
+endRowOut:
+mov edx,eax
+JMP endRowOutRet
 maxFilter endp
 end

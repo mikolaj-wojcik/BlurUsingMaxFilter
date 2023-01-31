@@ -54,7 +54,7 @@ bool ImageHandling::loadImage() {
 
 	std::cout << width << "\n" << height;
 
-	clearArray();
+	//clearArray();
 
 	int padding = 4-((width * 3 * sizeof(std::byte)) % 4);
 	if (padding == 4)
@@ -72,13 +72,11 @@ bool ImageHandling::loadImage() {
 		for (long w = 0; w < width; w++) {
 			std::byte singlePix[3];
 			f.read(reinterpret_cast<char*>(singlePix), 3);
-			//std::cout << (int)singlePix[0] << (int)singlePix[1] << (int)singlePix[2];
+			
 			pixelArray[(h * width * 3) + w * 3] = singlePix[0];
 			pixelArray[(h * width * 3) + w * 3 + 1] = singlePix[1];
 			pixelArray[(h * width * 3) + w * 3 + 2] = singlePix[2];
-			//f.read((char*)pixelArray[(h * width * 3) + w * 3], 3);
-			//f.read((char*)pixelArray[(h * width * 3) + w * 3 + 1], sizeof(std::byte));
-			//f.read((char*)pixelArray[(h * width * 3) + w * 3 + 2], sizeof(std::byte));
+			
 		}
 		f.read((char*)arrForPadding, padding);
 
@@ -237,7 +235,7 @@ double ImageHandling::singleColorPixelBightness(std::byte color) {
 }
 
 void ImageHandling::setNumberOfThreads(int num) {
-	//numberOfThreads = num;
+	numberOfThreads = num;
 }
 
 void ImageHandling::setRay(int fRay) {
@@ -249,7 +247,7 @@ void ImageHandling::changeLib(bool newVal) {
 
 
 void ImageHandling::callLibFunction() {
-	typedef int(_stdcall* maxFilter)(parametersStruct, std::byte*, std::byte*, int16_t*);
+	typedef void(_stdcall* maxFilter)(parametersStruct, std::byte*, std::byte*, int16_t*);
 	HINSTANCE dllHandler = NULL;
 	if(libUsed)
 		dllHandler = LoadLibrary(L"BlurringLib.dll");
@@ -270,27 +268,36 @@ void ImageHandling::callLibFunction() {
 		}
 		else
 			rowsForLastThread = height;
-
-		//filter(parametersStruct(packToStruct(width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray)), pixelArray, outputArray, brightnessArray);
-
-
+		
+		
 		std::vector<std::thread> threads;
 		for (int i = 0; i < numberOfThreads - 1; i++) {
-
-			threads.push_back(std::thread(filter, packToStruct(width, height, (i + 1) * rowsPerThread, i * rowsPerThread, ray), pixelArray, outputArray, brightnessArray));
-
+			sem.acquire();
+			parametersStruct p = packToStruct(width, height, rowsPerThread, i * rowsPerThread, ray);
+			threads.push_back(std::thread(&ImageHandling::callFunc, this , p, dllHandler));
+		
 		}
-		threads.push_back(std::thread(filter, packToStruct(width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray), pixelArray, outputArray, brightnessArray));
-
+		sem.acquire();
+		parametersStruct p = packToStruct(width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray);
+		
+		threads.push_back(std::thread(&ImageHandling::callFunc, this,p, dllHandler));
 
 		for (auto& trd : threads) {
-			if (trd.joinable())
+			if (trd.joinable()) {
 				trd.join();
+			}
 		}
+		
 	}
 }
 
+void ImageHandling::callFunc(parametersStruct p, HINSTANCE dllHandler) {
+	
+	sem.release();
+	maxFilter filter = (maxFilter)GetProcAddress(dllHandler, "maxFilter");
+	filter(p, pixelArray, outputArray, brightnessArray);
 
+}
 parametersStruct ImageHandling::packToStruct( 
 	int32_t fWitdh, int32_t fHeight, int32_t fNumOfRowsToToDo, int32_t startRow, int32_t fRay) {
 	parametersStruct p;

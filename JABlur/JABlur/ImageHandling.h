@@ -7,6 +7,8 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <future>
+#include <semaphore>
 #include <math.h>
 #include <windows.h>
 #include <chrono>
@@ -18,6 +20,7 @@
 
 class ImageHandling
 {
+	typedef void(_stdcall* maxFilter)(parametersStruct, std::byte*, std::byte*, int16_t*);
 	bool libUsed = true;
 	int32_t width;
 	int32_t height;
@@ -29,6 +32,7 @@ class ImageHandling
 	int16_t* brightnessArray = nullptr;
 	int numberOfThreads =1;
 	int ray =1;
+	std::binary_semaphore sem{ 1 };
 
 	bmpFileHeader tempHead;
 	bmpInfoHeader tempInfo;
@@ -50,6 +54,7 @@ class ImageHandling
 
 
 	int16_t* calculateBrightness();
+	void callFunc(parametersStruct p, HINSTANCE dllHandler);
 
 	void libFunction(std::byte* inputArr, std::byte* outputArr, int16_t* brightArr, int32_t fWitdh, int32_t fHeight, int32_t fNumOfRowsToToDo, int32_t startRow, int32_t fRay);
 
