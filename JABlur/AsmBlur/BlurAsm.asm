@@ -42,15 +42,13 @@ maxFilter proc
 
 mov rAX, [RCX]
 add rcx, 4  ; offset iterator to get access to next vaklue of struct
-;sub eax, 1; w sumie to nwm czemu ole dzięki temu nie ma artefaktów
 mov fWidth, eax
 mov rax, [RCX]
-sub eax, 1; w sumie to nwm czemu ole dzięki temu nie ma artefaktów
+sub eax, 1; 
 mov fHeight, eax
 add rcx, 4  ; offset iterator to get access to next vaklue of struct
 mov rax, [RCX]
-;add eax, 60; w sumie to nwm czemu ole dzięki temu nie ma artefaktów
-;sub eax, 1
+
 mov fNumOfRowsToDo, eax
 add rcx, 4  ; offset iterator to get access to next vaklue of struct
 mov rax, [RCX]
@@ -85,7 +83,7 @@ add edx, fNumOfRowsToDo; get last row number required to edit
 sub edx,1
 mov eax, fHeight
 cmp edx, eax
-JG endRowOut
+JG endRowOut ; compare if calculated endRow is in picture range
 
 endRowOutRet:
 
@@ -125,18 +123,10 @@ add r10, rbx
 mov r11, rdx
 add r11, rbx
 
+;initiazling labels
 xor rax, rax
-mov eax, fWidth; load width offset to calculate index
-imul rax, rcx; multply by already processed rows of picture
-add rax, rdx; add number of columns already processed
-;mov r12, rax; save index of current modyfing index to register
-mov r12,0
-imul rax,2
-add rax, brightArr
-xor rbx, rbx
-mov bx, word ptr[rax];load bright value of current modified pixel to register
-;mov r13, rbx;
-mov r13, 0
+mov r12,rax
+mov r13, rax
 
 
 
@@ -154,7 +144,6 @@ RAYHEIGHT: ;Loop to to find max brghness element in slected pixel neighbour
 
 xor rax, rax
 mov eax, fHeight	;load number of picture rows
-;mov eax, endRow
 cmp r8, rax; check if ray iterator is still in pixelArray range
 
 JGE RayHeightEndLoop
@@ -162,11 +151,10 @@ RayHeightAfterEvZero:
 
 ;initializng itarator through width of 
 ;kernel to select maxBrightness element
-
 xor rbx, rbx
 mov ebx , fRay
 mov r9, rdx
-sub r9, rbx
+sub r9, rbx; Subtract value of ray from current pixel width index to get better
 
 
 
@@ -244,6 +232,8 @@ add rax, rdx
 imul rax, 3
 add rax, outputArr
 
+
+;save brightest pixel data into outputArray
 movd r12d,xmm0
 movd r13d, xmm1
 movd r14d, xmm2
@@ -293,7 +283,8 @@ mov r13, rbx; save new value
 mov r12, r14;save index
 JMP retFromSave
 
-
+;if calculated row is outside of picture range
+;load intead maximum picture row
 endRowOut:
 mov edx,eax
 JMP endRowOutRet

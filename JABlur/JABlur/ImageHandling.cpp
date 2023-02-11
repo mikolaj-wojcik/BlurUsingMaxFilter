@@ -274,13 +274,13 @@ void ImageHandling::callLibFunction() {
 		for (int i = 0; i < numberOfThreads - 1; i++) {
 			sem.acquire();
 			parametersStruct p = packToStruct(width, height, rowsPerThread, i * rowsPerThread, ray);
-			threads.push_back(std::thread(&ImageHandling::callFunc, this, p, dllHandler));
+			threads.push_back(std::thread(&ImageHandling::callFunc, this, p, filter));
 		
 		}
 		sem.acquire();
 		parametersStruct p = packToStruct(width, height, rowsForLastThread, (numberOfThreads - 1) * rowsPerThread, ray);
 		
-		threads.push_back( std::thread(&ImageHandling::callFunc, this, p, dllHandler));
+		threads.push_back( std::thread(&ImageHandling::callFunc, this, p, filter));
 
 		for (auto& trd : threads) {
 			if (trd.joinable()) {
@@ -291,11 +291,10 @@ void ImageHandling::callLibFunction() {
 	}
 }
 
-void ImageHandling::callFunc(parametersStruct p, HINSTANCE dllHandler) {
+void ImageHandling::callFunc(parametersStruct p, std::function<void(parametersStruct, std::byte*,std::byte*, int16_t*)> filter) {
+	
 	
 	sem.release();
-	maxFilter filter = (maxFilter)GetProcAddress(dllHandler, "maxFilter");
-	
 	filter(p, pixelArray, outputArray, brightnessArray);
 	
 
